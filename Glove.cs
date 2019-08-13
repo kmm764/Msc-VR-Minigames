@@ -52,6 +52,11 @@ public class Glove : MonoBehaviour
         {
             SceneManager.LoadScene(sceneName: "minigame2");
         }
+        if (collision.gameObject.name == "Minigame3")
+        {
+            SceneManager.LoadScene(sceneName: "minigame3");
+        }
+
         if (collision.gameObject.name == "adjustHeight")
         {
             GameThreeController.adjustheightBool = true;

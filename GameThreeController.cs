@@ -17,16 +17,20 @@ public class GameThreeController : MonoBehaviour
     float distanceTravelledR = 0;
     float distanceTravelledL = 0;
     public GameObject opponentHead;
+    public Light IT;
+    public static bool changeLightToRed = false;
 
-    float AIpunchingDistance = 35;
+    float AIpunchingDistance = 25;
 
     int indicator =0;
     bool punchingRC;
     bool punchingLJ;
+    bool punchingJC;
     bool moveGloveBackR =false;
     bool moveGloveBackL = false;
     bool canPunch = false;
-
+    float timerR = 1;
+    int moves;
     public static bool adjustheightBool = false;
     Vector3 headPositionWhenStart ;
         //new Vector3(0, 0, 0);
@@ -34,17 +38,26 @@ public class GameThreeController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        
         startingPositionR = RightGlove.transform.position;
         startingPositionL = LeftGlove.transform.position;
         StartingRotationR = RightGlove.transform.rotation;
-        StartingRotationL = RightGlove.transform.rotation;
+        StartingRotationL = LeftGlove.transform.rotation;
         punchingRC = false;
+        
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (changeLightToRed && timerR >0)
+        {
+            
+            timerR -= Time.deltaTime;
+            IT.color = Color.red;
+        }
+        
+
         //Debug.Log(startingPositionR);
         if (canPunch == false)
         {
@@ -56,7 +69,7 @@ public class GameThreeController : MonoBehaviour
         //Right hand
         distanceTravelledR += Vector3.Distance(RightGlove.transform.position, startingPositionR);
         distanceTravelledL += Vector3.Distance(LeftGlove.transform.position, startingPositionL);
-        if (punchingRC == false && punchingLJ == false)
+        if (punchingRC == false && punchingLJ == false && punchingJC == false)
         {
             headPositionWhenStart = headPosition.transform.position;
         }
@@ -68,7 +81,7 @@ public class GameThreeController : MonoBehaviour
             canPunch = true;
             timer = 5;
             //generate random number to choose between animations
-            indicator = Random.Range(3, 4);
+            indicator = Random.Range(3, 5);
             
         }
 
@@ -76,26 +89,34 @@ public class GameThreeController : MonoBehaviour
         {
             case 1:
 
-                punchingRC = true;
-                RightCross(0);
+                
+                RightCross(moves);
                 
                 break;
             case 2:
-                punchingLJ = true;
-                LeftJab();
+                
+                LeftJab(moves);
                 break;
             case 3:
-                punchingRC = true;
+                if (punchingJC == false)
+                {
+                    moves = 1;
+                    punchingJC = true;
+                }
                 
-                RightCross(1);
                 
-                
-                    
-                
-                                
+                RightCross(moves);
+             
                 break;
             case 4:
-                
+                if (punchingJC == false)
+                {
+                    moves = 3;
+                    punchingJC = true;
+                }
+
+
+                LeftJab(moves);
                 break;
             case 0:
                 
@@ -105,12 +126,12 @@ public class GameThreeController : MonoBehaviour
         
 
         //head
-        if (punchingRC == false && punchingLJ ==false)
+        if (punchingRC == false && punchingLJ ==false && punchingJC == false)
         {
             startingPositionR = RightGlove.transform.position;
             startingPositionL = LeftGlove.transform.position;
             StartingRotationR = RightGlove.transform.rotation;
-            StartingRotationL = RightGlove.transform.rotation;
+            StartingRotationL = LeftGlove.transform.rotation;
             opponentHead.transform.LookAt(2 * opponentHead.transform.position - headPosition.transform.position);
         }
         
@@ -120,11 +141,11 @@ public class GameThreeController : MonoBehaviour
             opponentHead.transform.position = new Vector3(0, headPosition.transform.position.y, 1.0f);
             adjustheightBool = false;
         }
-        Debug.Log(timer);
+        Debug.Log(moves);
     }
-    void RightCross(int moves) //0 = basic cross, 1 = jab/cross 
+    void RightCross(int m) //number of moves remaining
     {
-        
+        punchingRC = true;
         float step = speed * (Time.deltaTime);
         
         if (punchingRC == true && moveGloveBackR == false)
@@ -149,22 +170,28 @@ public class GameThreeController : MonoBehaviour
         {
             RightGlove.transform.rotation = StartingRotationR;
             timer = 2;
-            if (moves == 0)
+            if (m == 0)
             {
                 indicator = 0;
+                punchingJC = false;
             }
-            else if(moves ==1){
-                indicator = 2;
+            else if(m > 0){
+                moves -= 1;
+                indicator = Random.Range(1, 3);
+                    //;
+                
             }
             punchingRC = false;
             moveGloveBackR = false;
             distanceTravelledR = 0;
             canPunch = false;
         }
+       
         Debug.Log(distanceTravelledR);
     }
-    void LeftJab()
+    void LeftJab(int m)
     {
+        punchingLJ = true;
         float step = speed * Time.deltaTime;
         
         if (punchingLJ == true && moveGloveBackL == false)
@@ -189,8 +216,20 @@ public class GameThreeController : MonoBehaviour
         {
             LeftGlove.transform.rotation = StartingRotationL;
             timer = 2;
-            indicator = 0;
+            if (m == 0)
+            {
+                indicator = 0;
+                punchingJC = false;
+            }
+            else if (m > 0)
+            {
+                moves -= 1;
+                indicator = Random.Range(1, 3);
+                
+
+            }
             punchingLJ = false;
+            
             moveGloveBackL = false;
             distanceTravelledL = 0;
             canPunch = false;
